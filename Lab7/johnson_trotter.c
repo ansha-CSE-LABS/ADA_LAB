@@ -1,76 +1,111 @@
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
-int flag = 1;
+int LEFT_TO_RIGHT = 1;
+int RIGHT_TO_LEFT = 0;
 
-void heapPermute(int n, int arr[], int arrLen)
-{
-    int temp;
-    int i;
-
-    if (n == 1)
-    {
-        printf("\n[");
-
-        for (i = 0; i < arrLen; i++)
-            printf("%d,", arr[i]);
-        printf("\b] Sign : %d", flag);
-
-        flag *= -1;
-    }
-    else
-    {
-        for (i = 0; i < n - 1; i++)
-        {
-            heapPermute(n - 1, arr, arrLen);
-
-            if (n % 2 == 0)
-            {
-                temp = arr[i];
-                arr[i] = arr[n - 1];
-                arr[n - 1] = temp;
-            }
-            else
-            {
-                temp = arr[0];
-                arr[0] = arr[n - 1];
-                arr[n - 1] = temp;
-            }
-        }
-        heapPermute(n - 1, arr, arrLen);
-    }
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
-int main(int argC, char *argV[0])
+int searchArr(int a[], int n, int mobile)
 {
-    int *arr, i = 0, count = 1;
-    char *token;
+    for (int i = 0; i < n; i++)
+        if (a[i] == mobile)
+           return i + 1;
+}
 
-    if (argC == 1)
-        printf("Usage : %s <comma separated list of integers>", argV[0]);
-    else
+int getMobile(int a[], int dir[], int n)
+{
+    int mobile_prev = 0, mobile = 0;
+    for (int i = 0; i < n; i++)
     {
-        while (argV[1][i] != 00)
+
+        if (dir[a[i]-1] == RIGHT_TO_LEFT && i!=0)
         {
-            if (argV[1][i++] == ',')
-                count++;
+            if (a[i] > a[i-1] && a[i] > mobile_prev)
+            {
+                mobile = a[i];
+                mobile_prev = mobile;
+            }
         }
 
-        arr = (int *)malloc(count * sizeof(int));
-
-        i = 0;
-
-        token = strtok(argV[1], ",");
-
-        while (token != NULL)
+        if (dir[a[i]-1] == LEFT_TO_RIGHT && i!=n-1)
         {
-            arr[i++] = atoi(token);
-            token = strtok(NULL, ",");
+            if (a[i] > a[i+1] && a[i] > mobile_prev)
+            {
+                mobile = a[i];
+                mobile_prev = mobile;
+            }
         }
-
-        heapPermute(i, arr, count);
     }
 
+    if (mobile == 0 && mobile_prev == 0)
+        return 0;
+    else
+        return mobile;
+}
+
+int printOnePerm(int a[], int dir[], int n)
+{
+    int mobile = getMobile(a, dir, n);
+    int pos = searchArr(a, n, mobile);
+
+    if (dir[a[pos - 1] - 1] ==  RIGHT_TO_LEFT)
+       swap(&a[pos-1], &a[pos-2]);
+
+    else if (dir[a[pos - 1] - 1] == LEFT_TO_RIGHT)
+       swap(&a[pos], &a[pos-1]);
+
+    for (int i = 0; i < n; i++)
+    {
+        if (a[i] > mobile)
+        {
+            if (dir[a[i] - 1] == LEFT_TO_RIGHT)
+                dir[a[i] - 1] = RIGHT_TO_LEFT;
+            else if (dir[a[i] - 1] == RIGHT_TO_LEFT)
+                dir[a[i] - 1] = LEFT_TO_RIGHT;
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        printf("%d",a[i]);
+    printf("\n");
+}
+
+int fact(int n)
+{
+    int res = 1;
+    for (int i = 1; i <= n; i++)
+        res = res * i;
+    return res;
+}
+
+void printPermutation(int n)
+{
+
+    int a[n];
+
+    int dir[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        a[i] = i + 1;
+        printf("%d",a[i]);
+    }
+    printf("\n");
+
+    for (int i = 0; i < n; i++)
+        dir[i] =  RIGHT_TO_LEFT;
+
+
+    for (int i = 1; i < fact(n); i++)
+        printOnePerm(a, dir, n);
+}
+int main()
+{
+    int n = 4;
+    printPermutation(n);
     return 0;
 }
